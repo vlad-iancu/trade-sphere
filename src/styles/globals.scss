@@ -1,0 +1,7 @@
+@use "fonts.scss" as fonts;
+@use "colors.module.scss" as colors;
+@use "mixins.scss" as funcs;
+
+.error {
+    background-color: red;
+}

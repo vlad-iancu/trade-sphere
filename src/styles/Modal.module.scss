@@ -1,0 +1,80 @@
+@use "mixins";
+@use "colors.module.scss";
+
+.modal {
+    font-family: "NotoSans";
+    width: 100%;
+    height: 100%;
+    left:0;
+    top: 0;
+    position: fixed;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    @include mixins.center-flex;
+}
+
+.modal-frame {
+    position: absolute;
+    padding: 16px;
+    // left: 0;
+    // right: 0;
+    // top: 0; 
+    // bottom: 0;
+    flex-shrink: 0;
+    //width: 30%;
+    //height: 30%;
+    @include mixins.card(
+        $border-radius: 16px,
+        $border-width: 1px,
+        $border-color: colors.$gray,
+        $shadow-spread: 4px,
+        $shadow-blur: 6px);
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+    flex-direction: column;
+    background-color: colors.$white;
+    h2 {
+        align-self: flex-start;
+        margin-left: 16px;
+    }
+}
+
+.modal-close {
+    width: 15%;
+    height: 32px;
+    min-width: 64px;
+    background-color: colors.$darkRed;
+    color: colors.$white;
+    align-self: flex-end;
+    border-radius: 8px;
+    margin-right: 8px;
+    margin-bottom: 8px;
+    font-size: smaller;
+    font-weight: bold;
+    text-align: center;
+    vertical-align: middle;
+    cursor: pointer;
+
+    @include mixins.center-flex;
+    &:hover {
+        background-color: rgba($color: colors.$darkRed, $alpha: 0.85);
+    }
+}
+
+.modal-open {
+    @extend .modal-close;
+    background-color: colors.$black;
+    &:hover {
+        background-color: rgba($color: colors.$black, $alpha: 0.85);
+    }
+}
+
+.modal-button-group {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    align-self: flex-end;
+    width: 100%;
+}

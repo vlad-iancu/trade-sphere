@@ -1,0 +1,135 @@
+@use "colors.module.scss";
+@use "mixins.scss";
+
+@mixin object-center {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+$circleSize: 100px;
+$radius: 50px;
+$shadow: 0 0 10px 0 rgba(255, 255, 255, .35);
+$fontColor: colors.$white;
+$transparency: .3;
+
+.profile-pic {
+    color: transparent;
+    transition: all .3s ease;
+    @include object-center;
+    position: relative;
+    width: $circleSize;
+    transition: all .3s ease;
+    margin-top: 8px;
+
+    input {
+        display: none;
+    }
+
+    img {
+        position: absolute;
+        object-fit: cover;
+        width: $circleSize;
+        height: $circleSize;
+        box-shadow: $shadow;
+        border-radius: $radius;
+        z-index: 0;
+    }
+
+    .-label {
+        cursor: pointer;
+        height: $circleSize;
+        width: $circleSize;
+    }
+
+    $animation-duration: .3s;
+    $camera-animation: height $animation-duration ease,
+        width $animation-duration ease,
+        right $animation-duration ease,
+        bottom $animation-duration ease,
+        fill $animation-duration ease;
+
+    .camera {
+        width: 24px;
+        height: 24px;
+        position: absolute;
+        z-index: 1;
+        color: $fontColor;
+        //font-size: 1.5em;
+        transition: all .3s ease;
+        right: 0;
+        bottom: 0;
+        //color: colors.$black;
+        //background-color: colors.$white;
+        fill: colors.$black;
+
+        transition: $camera-animation;
+    }
+
+    &:hover {
+        .-label {
+            @include object-center;
+            background-color: rgba(0, 0, 0, $transparency);
+            z-index: 10000;
+            color: $fontColor;
+            transition: background-color .2s ease-in-out;
+            border-radius: $radius;
+            margin-bottom: 0;
+        }
+
+        //Finish transition
+        .camera {
+            right: calc(50% - 24px);
+            bottom: calc(50% - 24px);
+            fill: colors.$gray;
+            transition: $camera-animation;
+            width: 48px;
+            height: 48px;
+        }
+    }
+
+    span {
+        display: inline-flex;
+        padding: .2em;
+        height: 2em;
+        font-family: "NotoSans";
+        //font-size: small;
+        font-weight: bolder;
+        text-align: center;
+    }
+}
+
+.save {
+    font-family: "NotoSans";
+    @include mixins.pill-button($background-color: colors.$black,
+        $color: colors.$white,
+        $width: 100px,
+        $height: 24px,);
+
+    margin-top: 12px;
+    //font-weight: bold;
+    //font-size: large;
+}
+
+.profile-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 24px;
+    width: 0%;
+    min-width: 100px;
+
+}
+/////////////////////////
+// Body styling 🐾
+/////////---------->
+
+// body {
+//   height: 100vh;
+//   background-color: rgb(25, 24, 21);
+//   @include object-center;
+
+//   a:hover {
+//     text-decoration: none;
+//   }
+// }

@@ -1,0 +1,80 @@
+@use "colors.module.scss";
+@use "mixins.scss";
+
+.edit-name {
+    display: inline-flex;
+    justify-content: flex-start;
+    //max-width: 164px;
+    margin-top: 16px;
+    align-items: flex-start;
+    flex-direction: column;
+    text-decoration: none !important;
+
+    &:hover {
+        cursor: pointer;
+
+        .underline {
+            background-color: colors.$blue;
+            //align-self: flex-end;
+            // left: 0;
+            // right: 0;
+            width: 100%;
+            height: 2px;
+            //align-self: flex-start;
+            transition: width 0.3s ease-out, background-color 0.3s ease-out;
+        }
+
+        .icon {
+            opacity: 1;
+            color: colors.$blue;
+            transition: opacity 0.3s ease-out, color 0.15s ease-out 0.15;
+        }
+
+        a {
+            color: colors.$blue;
+            transition: color 0.3s ease-out;
+        }
+    }
+
+    .edit-name-label {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        margin: 2px;
+    }
+
+
+
+    .icon {
+        opacity: 0;
+        color: colors.$blue;
+        scale: 0.85;
+        transition: opacity 0.3s ease-out, color 0.15s ease-out 0.15;
+    
+    }
+
+    a {
+        font-family: "NotoSans";
+        text-decoration: none !important;
+        color: colors.$black;
+        font-weight: bold;
+        margin-right: 8px;
+        transition: color 0.3s ease-out;
+    }
+
+    .underline {
+        background-color: colors.$black;
+        //align-self: flex-end;
+        // left: 0;
+        // right: 0;
+        width: 0%;
+        height: 2px;
+        //align-self: flex-start;
+        transition: width 0.3s ease-out, background-color 0.3s ease-out;
+
+
+    }
+
+
+}

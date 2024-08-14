@@ -1,0 +1,55 @@
+@use "mixins.scss";
+@use "colors.module.scss";
+
+@mixin center() {
+    position: fixed;
+    inset: 0px;
+    margin: auto;
+}
+.container {
+    position: fixed;
+    inset: 0px;
+    width: 30%;
+    height: 30%;
+    max-width: 100vw;
+    max-height: 100dvh;
+    margin: 10% 35% 60% 35%;
+    background-color: transparent;
+    
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+
+    @include mixins.card($border-color: colors.$black, $border-radius: 12px, $border-width: 1px, $shadow-blur: 4px, $shadow-spread: 4px, $offsetx: 1px);
+}
+
+.header {
+  font-family: "NotoSans";
+  font-weight: lighter;
+}
+
+.subheader {
+  font-family: "NotoSans";
+  font-weight: normal;
+
+}
+
+.logo {
+  display: block;
+  
+  @include center();
+  margin-top: 5%;
+}
+
+.login {
+  $width: 100%;
+  $height: 40px;
+  font-family: "NotoSans";
+  font-weight: bold;
+  padding: {
+     left: 16px;
+     right: 16px;
+  }
+  @include mixins.pill-button($background-color: colors.$black, $color: colors.$white, $border-color: colors.$profitGreen, $width: $width, $height: $height);
+}
