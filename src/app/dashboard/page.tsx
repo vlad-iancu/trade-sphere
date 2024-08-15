@@ -23,6 +23,6 @@ export default function Profile() {
         <button onClick={async () => {
             const user = await getUser()
             console.log(`User is ${user}`)
-        }}>Click me for Server action</button>
+        }}>Click me for action</button>
     )
 }  
