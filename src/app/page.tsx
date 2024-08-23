@@ -1,8 +1,8 @@
 //import Image from "next/image";
 //import styles from "./page.module.scss";
 
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+// import { auth } from "@/auth";
+// import { redirect } from "next/navigation";
 
 export default async function Home() {
   // const sesstion = await auth()

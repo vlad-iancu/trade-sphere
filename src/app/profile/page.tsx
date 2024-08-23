@@ -1,7 +1,6 @@
-//Create a server component that will display some text
 
-import { logout } from "@/actions/logout"
-import { uploadProfilePhoto } from "@/actions/uploadProfilePhoto"
+import { logout } from "@/actions/user/logout"
+import { uploadProfilePhoto } from "@/actions/user/uploadProfilePhoto"
 import { useSession } from "next-auth/react"
 import { redirect } from "next/navigation"
 
@@ -14,7 +13,7 @@ import { auth } from "@/auth"
 import { get } from "http"
 import { getNameForUser, getPictureUrlForUser } from "@/data/user"
 import Link from "next/link"
-import { getUser } from "@/actions/getUser"
+import { getUser } from "@/actions/user/getUser"
 import styles from "@/styles/Profile.module.scss"
 
 const sampleImgUrl = "https://cdn.pixabay.com/photo/2017/08/06/21/01/louvre-2596278_960_720.jpg"
@@ -31,10 +30,10 @@ export default async function Profile() {
     //     setImgSrc(session?.auth0Picture ?? "")
     // },[session])
     const session = await auth()
-    if (!session?.user) {
-        redirect("/login")
-    }
-    const profileUrl = await getPictureUrlForUser(session.auth0Id)
+    // if (!session?.user) {
+    //     redirect("/login")
+    // }
+    const profileUrl = await getPictureUrlForUser(session?.auth0Id ?? "")
     const username = (await getUser()).name
     return (
         <div>

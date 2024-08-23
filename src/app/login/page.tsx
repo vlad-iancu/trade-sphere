@@ -18,8 +18,10 @@ export default async function Login({
 
     const callbackUrl = searchParams.callbackUrl as string | undefined
     const session = await auth()
+    const defaultPage = "/dashboard"
     if(session?.user) {
-        redirect(callbackUrl ?? "/profile")
+        //Always redirected to login despite being signed in
+        redirect(callbackUrl ?? defaultPage)
     }
     return (
         <Fragment>
@@ -32,21 +34,18 @@ export default async function Login({
                 //console.log("msg")
                 "use server"
                 try {
-                    await signIn("auth0", {redirectTo: callbackUrl ?? "/profile"})
+                    await signIn("auth0", {redirectTo: callbackUrl ?? defaultPage})
                 }
                 catch (error) {
                     if (error instanceof AuthError) {
-                        return redirect(callbackUrl ?? "/profile")
+                        return redirect(callbackUrl ?? defaultPage)
                     }
                     throw error
                 }
             }}>
                 <button className={styles.login} type="submit">Sign in with Auth0</button>
             </form>
-            {/* <button onClick={async () => {
-                "use server"
-                console.log("msg")
-            }}/> */}
+           
         </div>
         </Fragment>
     )

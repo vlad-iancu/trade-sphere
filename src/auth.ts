@@ -8,7 +8,7 @@ import Auth0, { Auth0Profile } from "next-auth/providers/auth0"
 import netsuite from "next-auth/providers/netsuite"
 import { NextResponse } from "next/server"
 import { setDbUser, setNameForUser, setPictureUrlForUser } from "./data/user"
-import { getUserMetadata } from "./actions/mgmt_api"
+import { getUserMetadata } from "./actions/user/mgmt_api"
 
 export const { handlers, signIn, signOut, auth } = NextAuth({
   providers: [
@@ -41,10 +41,10 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
   ],
   pages: {
     signIn: "/login",
-    // signOut: "/login",
-    // error: "/login",
-    // verifyRequest: "/login",
-    // newUser: "/login",
+    //   // signOut: "/login",
+    //   // error: "/login",
+    //   // verifyRequest: "/login",
+    //   // newUser: "/login",
   },
   callbacks: {
     async redirect({ url, baseUrl }) {
@@ -56,7 +56,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       return url
     },
     authorized({ auth, request: { nextUrl, url } }) {
-      const protectedRoutes = ["/profile", "/dashboard"]
+      const protectedRoutes = ["/profile", "/dashboard", "/stock"]
       const isLoggedIn = !!auth?.user
       const isProtected = protectedRoutes.reduce((acc: boolean, route: string) => {
         return acc || nextUrl?.pathname.startsWith(route)
@@ -64,7 +64,9 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
       if (isProtected) {
         if (isLoggedIn)
           return true
-        return false
+        {
+          return false
+        }
       }
       else {
         return true
@@ -81,7 +83,7 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
           //console.log(`metadata username is ${metadata.username}`)
           await setNameForUser(profile.sub ?? "", metadata.username)
           await setDbUser(profile.sub ?? "", metadata.username, profile.picture)
-          token = {...token, auth0Username: metadata.username}
+          token = { ...token, auth0Username: metadata.username }
           // await setNameForUser(profile.sub ?? "", profile.auth0Name as string)
         }
         //Set the photo url to the one contained in profile

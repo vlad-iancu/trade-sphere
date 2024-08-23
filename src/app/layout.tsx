@@ -22,6 +22,7 @@ export default function RootLayout({
 
   //console.log(`noNavPages contains route ${noNavPages?.includes(pathname) }`);
   //const containerClass = noNavPages?.includes(pathname) ? styles["container-no-nav"] : styles["container-nav"];
+  console.log("Original RootLayout is rendered")
   return (
     <html lang="en">
       <SessionProvider>

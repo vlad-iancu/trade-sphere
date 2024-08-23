@@ -1,7 +1,8 @@
-import { getUser } from "@/actions/getUser"
+import { getUser } from "@/actions/user/getUser"
 import { getUserBalance } from "@/data/balance"
 import { Session } from "next-auth"
-import SignedIn from "../components/SignedIn"
+import SignedIn from "../../components/SignedIn"
+import Search from "../Search"
 
 // import { logout } from "@/actions/logout"
 // import { uploadProfilePhoto } from "@/actions/uploadProfilePhoto"
@@ -22,6 +23,10 @@ export default async function Dashboard() {
     const session = await SignedIn()
     const balance = getUserBalance(session.auth0Id)
     return (
-        <span>User Balance is {balance}</span>
+        <>
+            <Search />
+            <span>User Balance is {balance}</span>
+        </>
+
     )
 }

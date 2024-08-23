@@ -32,18 +32,11 @@ export async function uploadProfilePhoto(formData: FormData) {
 
     const arrayBuffer = await file.arrayBuffer();
     const buffer = new Uint8Array(arrayBuffer);
-    // console.log(`Buffer length is ${buffer.length}`);
-    console.log(`filename: ${filename}`);
-    // console.log(`is buffer null? ${buffer === null}`);
     const { data, error } = await bucket.upload(filename, buffer, { upsert: true });
-    console.log(`data: ${data}`);
-    console.log(`error: ${error?.message ?? "No error"}`);
     //Create a signed url for the created object
     const temp = await bucket.createSignedUrl(filename, urlDuration);
-    console.log(`signedURL: ${temp.data?.signedUrl}`);
     //axios.patch(`${process.env.AUTH_AUTH0_ISSUER}/api/v2/users`)
     if (error) {
-        console.log("We have an error");
         console.log(error);
     }
     else {

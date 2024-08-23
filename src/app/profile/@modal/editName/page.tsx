@@ -1,14 +1,14 @@
 "use client";
 import Modal from "@/app/components/Modal";
-import { updateUserName } from "@/actions/updateUserName"
+import { updateUserName } from "@/actions/user/updateUserName"
 import { redirect } from "next/navigation";
 import React, { use, useCallback, useEffect, useState } from "react";
 import styles from "@/styles/EditName.module.scss"
 import { getNameForUser, setNameForUser } from "@/data/user";
 import { auth } from "@/auth";
-import { updateUserMetadata } from "@/actions/mgmt_api";
+import { updateUserMetadata } from "@/actions/user/mgmt_api";
 import { useSession } from "next-auth/react";
-import { getSampleUser, getUser } from "@/actions/getUser";
+import { getSampleUser, getUser } from "@/actions/user/getUser";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
@@ -32,16 +32,16 @@ export default function EditName() {
         //const res = fetch("http://localhost:3000/api/user")
         const res = getUser()
         res.then((data) => {
-            console.log(`Data is ${data}`)
             setUserName(data.name)
             setUpdateUserCallback(() => updateUserName.bind(null, data.name))
         })
 
 
     }, [])
-    if (!session) {
-        redirect("/login")
-    }
+    // if (!session) {
+    //     console.log("Redirecting to login from EditName")
+    //     redirect("/login")
+    // }
     return (
         <Modal title="Edit Name" onClose={async () => {
             router.back()

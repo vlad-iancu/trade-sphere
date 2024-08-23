@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react"
 import { Camera } from "lucide-react"
 import styles from "@/styles/profile_picture.module.scss"
-import { uploadProfilePhoto } from "@/actions/uploadProfilePhoto"
+import { uploadProfilePhoto } from "@/actions/user/uploadProfilePhoto"
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 export default function ProfilePicture({ imgUrl }: { imgUrl: string }) {

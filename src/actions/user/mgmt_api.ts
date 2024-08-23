@@ -30,7 +30,6 @@ export async function getMgmtApiToken(): Promise<string> {
 
 export async function updateUserMetadata(userMetadata: any, userId: string): Promise<boolean> {
     const token = await getMgmtApiToken();
-    console.log(`Token is ${token}`);
     //return false
     var options = {
         method: 'PATCH',
@@ -44,10 +43,8 @@ export async function updateUserMetadata(userMetadata: any, userId: string): Pro
     };
 
     return await axios.request(options).then(function (response): boolean {
-        console.log(`response is ${response.status}`)
         return response.status === 200;
     }).catch(function (error): any {
-        console.log(`error is ${error}`)
         return false
     });
 }

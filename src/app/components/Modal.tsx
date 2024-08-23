@@ -30,7 +30,6 @@ export default function Modal(
 
     const cls = customClassName
     const frameCls = props.frameClassName ? `${styles["modal-frame"]} ${props.frameClassName}` : styles["modal-frame"]
-    console.log(cls)
     return (
         <div className={styles.modal}>
             <div className={frameCls} {...divProps}>
