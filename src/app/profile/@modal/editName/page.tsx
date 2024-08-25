@@ -48,8 +48,8 @@ export default function EditName() {
         }} className={styles["edit-name-modal"]}
             onSave={async () => {
                 await updateUserCallback()
+                router.back()
                 window.location.reload()
-                
             }}
             closeText="Cancel"
         >

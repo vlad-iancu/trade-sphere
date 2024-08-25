@@ -1,7 +1,7 @@
 "use server"
 
 import { auth } from "@/auth"
-import { updateUserMetadata } from "./user/mgmt_api"
+import { updateUserMetadata } from "./mgmt_api"
 import { setNameForUser } from "@/data/user"
 
 export async function updateUserName(username: string): Promise<void> {

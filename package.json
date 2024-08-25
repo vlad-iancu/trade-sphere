@@ -10,6 +10,8 @@
   },
   "dependencies": {
     "@auth/core": "^0.34.2",
+    "@babel/eslint-parser": "^7.25.1",
+    "@babel/plugin-proposal-export-default-from": "^7.24.7",
     "@google-cloud/storage": "^7.12.0",
     "@supabase/supabase-js": "^2.44.4",
     "@xmldom/xmldom": "^0.8.10",
@@ -28,9 +30,16 @@
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@typescript-eslint/eslint-plugin": "^8.2.0",
+    "@typescript-eslint/parser": "^8.2.0",
+    "babel-eslint": "^10.1.0",
     "base64-arraybuffer": "^1.0.2",
     "eslint": "^8",
+    "eslint-config-google": "^0.14.0",
     "eslint-config-next": "14.2.5",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
     "sass": "^1.77.8",
     "typescript": "^5"
   }

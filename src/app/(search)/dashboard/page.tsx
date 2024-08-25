@@ -24,7 +24,6 @@ export default async function Dashboard() {
     const balance = getUserBalance(session.auth0Id)
     return (
         <>
-            <Search />
             <span>User Balance is {balance}</span>
         </>
 
