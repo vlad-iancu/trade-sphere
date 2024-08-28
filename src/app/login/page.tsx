@@ -22,7 +22,13 @@ export default async function Login({
     }
     return (
         <Fragment>
-            <Image src={logo.src} className={styles.logo} alt="logo" />
+            <Image
+                width={0}
+                height={0}
+                src={logo.src}
+                className={styles.logo}
+                alt="logo"
+            />
             <div className={styles.container}>
                 <h1 className={styles.header}>Login</h1>
                 <h2 className={styles.subheader}>Sign in to your account</h2>
