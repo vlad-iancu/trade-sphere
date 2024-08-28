@@ -9,6 +9,17 @@ const nextConfig = {
             },
         ];
     },
+    images: {
+        domains: ['odwxkelpezjxsfjdwrbu.supabase.co'],
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'odwxkelpezjxsfjdwrbu.supabase.co',
+                port: '',
+                pathname: '/**',
+            },
+        ],
+    },
     async headers() {
         return [
             {

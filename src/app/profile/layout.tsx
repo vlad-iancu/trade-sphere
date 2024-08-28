@@ -10,4 +10,4 @@
 //   )
 // }
 
-export { default } from "@/app/components/ModalLayout"
+export { default } from "@/app/components/ModalLayout";

@@ -1,8 +1,5 @@
-import { getUser } from "@/actions/user/getUser"
-import { getUserBalance } from "@/data/balance"
-import { Session } from "next-auth"
-import SignedIn from "../../components/SignedIn"
-import Search from "../Search"
+import { getUserBalance } from "@/data/balance";
+import SignedIn from "../../components/SignedIn";
 
 // import { logout } from "@/actions/logout"
 // import { uploadProfilePhoto } from "@/actions/uploadProfilePhoto"
@@ -17,15 +14,13 @@ import Search from "../Search"
 // import { get } from "http"
 // import { getPictureUrlForUser } from "@/data/user"
 // import { getUser } from "@/actions/getUser"
-const sampleImgUrl = "https://cdn.pixabay.com/photo/2017/08/06/21/01/louvre-2596278_960_720.jpg"
 
 export default async function Dashboard() {
-    const session = await SignedIn()
-    const balance = getUserBalance(session.auth0Id)
+    const session = await SignedIn();
+    const balance = getUserBalance(session.auth0Id);
     return (
         <>
             <span>User Balance is {balance}</span>
         </>
-
-    )
+    );
 }

@@ -1,13 +1,11 @@
+/* eslint-env browser */
 //"use client";
-import { logout } from "@/actions/user/logout"
-import { auth } from "@/auth"
-import { redirect, useRouter } from "next/navigation"
-import styles from "@/styles/Navbar.module.scss"
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
-import colors from "@/styles/colors.module.scss"
+import { logout } from "@/actions/user/logout";
+import styles from "@/styles/Navbar.module.scss";
 
-type LogoutButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & { text: "Sign Out" };
+type LogoutButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
+    text: "Sign Out";
+};
 export default function LogoutButton(props: LogoutButtonProps) {
     // const session = await auth()
     // if (session === null) {
@@ -44,9 +42,10 @@ export default function LogoutButton(props: LogoutButtonProps) {
                 //         e.preventDefault()
                 //     }
 
-
                 // }}
-            >{props.text}</button>
+            >
+                {props.text}
+            </button>
         </form>
-    )
+    );
 }

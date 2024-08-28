@@ -1,15 +1,12 @@
 import styles from "@/styles/Navbar.module.scss";
-import { headers } from "next/headers";
 import UserPhoto from "./UserPhoto";
 import LogoutButton from "./LogoutButton";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import { auth } from "@/auth";
 
 const navItems = [
-    { label: "Home", route: "/dashboard" }, 
-    { label: "Settings", route: "/profile" },];
+    { label: "Home", route: "/dashboard" },
+    { label: "Settings", route: "/profile" },
+];
 export default async function Navbar() {
     //const headerList = headers();
     //const pathname = headerList.get("x-current-path") ?? "";
@@ -21,22 +18,37 @@ export default async function Navbar() {
     //},[pathname])
     const session = await auth();
     let isHidden = false;
-    if(!(session?.user)) {
+    if (!session?.user) {
         isHidden = true;
-        return <></>
+        return <></>;
     }
     return (
-        <nav className={`${styles.navbar} ${isHidden ? styles["navbar-hidden"] : ""}`}>
-            <UserPhoto width={"50%"} height={""} />
-            {
-                navItems.map(({ label, route }) => {
-                    return (
-                        <a href={route} key={route} className={/*pathname.startsWith(route) ? styles["navbar-element-active"] : */styles["navbar-element"]}>
-                            {label}
-                        </a>
-                    )
-                })
-            }
+        <nav
+            className={`${styles.navbar} ${isHidden ? styles["navbar-hidden"] : ""}`}
+        >
+            <UserPhoto
+                src=""
+                alt=""
+                width={0}
+                height={0}
+                style={{ width: "50%", height: "auto" }}
+                unoptimized
+            />
+            {navItems.map(({ label, route }) => {
+                return (
+                    <a
+                        href={route}
+                        key={route}
+                        className={
+                            /*pathname.startsWith(route) ? styles["navbar-element-active"] : */ styles[
+                                "navbar-element"
+                            ]
+                        }
+                    >
+                        {label}
+                    </a>
+                );
+            })}
             <LogoutButton text="Sign Out" />
         </nav>
     );
