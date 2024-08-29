@@ -12,7 +12,6 @@ export default function RootLayout({
 }>) {
     //console.log(`noNavPages contains route ${noNavPages?.includes(pathname) }`);
     //const containerClass = noNavPages?.includes(pathname) ? styles["container-no-nav"] : styles["container-nav"];
-    console.log("Route group layout is rendered");
     return (
         <>
             <Search />
