@@ -4,7 +4,6 @@
 .edit-name {
     display: inline-flex;
     justify-content: flex-start;
-    //max-width: 164px;
     margin-top: 16px;
     align-items: flex-start;
     flex-direction: column;
@@ -15,12 +14,8 @@
 
         .underline {
             background-color: colors.$blue;
-            //align-self: flex-end;
-            // left: 0;
-            // right: 0;
             width: 100%;
             height: 2px;
-            //align-self: flex-start;
             transition: width 0.3s ease-out, background-color 0.3s ease-out;
         }
 
@@ -65,12 +60,8 @@
 
     .underline {
         background-color: colors.$black;
-        //align-self: flex-end;
-        // left: 0;
-        // right: 0;
         width: 0%;
         height: 2px;
-        //align-self: flex-start;
         transition: width 0.3s ease-out, background-color 0.3s ease-out;
 
 

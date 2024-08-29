@@ -1,4 +1,4 @@
-import Page from "./page"
+import Page from "./page";
 export default function Default() {
-  return Page()
+    return Page();
 }

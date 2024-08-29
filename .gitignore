@@ -37,3 +37,7 @@ next-env.d.ts
 
 #Service account key
 tradesphere-*.json
+
+extract_tickers.py
+ibm*.json
+tickers.*

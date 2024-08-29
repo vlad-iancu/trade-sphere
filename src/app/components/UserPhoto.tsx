@@ -1,26 +1,17 @@
-"use client"
+//"use client"
 //import { auth } from "@/auth";
 import { getPictureUrlForUser } from "@/data/user";
 import styles from "@/styles/UserPhoto.module.scss";
-import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import SignedIn from "./SignedIn";
+import Image, { ImageProps } from "next/image";
 
-type UserPhotoProps = React.ImgHTMLAttributes<HTMLImageElement>;
-export default function UserPhoto(props: UserPhotoProps) {
-    const {data: session} = useSession();
-    // if (!session?.user) {
-    //     return null;
-    // }
-    
+type UserPhotoProps = ImageProps;
+export default async function UserPhoto(props: UserPhotoProps) {
+    const session = await SignedIn();
     //const imgUrl = await getPictureUrlForUser(id);
-    const [imgUrl, setImgUrl] = useState<string>("");
-    useEffect(() => {
-        getPictureUrlForUser(session?.auth0Id ?? "").then((url) => {
-            console.log(`Url is ${url}`);
-            setImgUrl(url);
-        });
-    },[session])
-    return (
-        <img src={imgUrl} className={styles.photo} {...props} />
-    );
+    //const [imgUrl, setImgUrl] = useState<string>("");
+    const imgUrl = await getPictureUrlForUser(session.auth0Id ?? "");
+    const copyProps = structuredClone(props);
+    copyProps.src = imgUrl;
+    return <Image className={styles.photo} {...copyProps} />;
 }
