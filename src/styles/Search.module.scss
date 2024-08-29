@@ -42,5 +42,12 @@
         background-color: colors.$blue;
         color: colors.$white;
         cursor: pointer;
+        span {
+            opacity: 0.75;
+        }
+    }
+    span {
+        font-size: small;
+        opacity: 0.5;
     }
 }
