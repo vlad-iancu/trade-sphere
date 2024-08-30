@@ -33,7 +33,6 @@ export const getAssetData = async (ticker: string): Promise<AssetData> => {
     const nameSelector = "//section[contains(@class, 'container')]/h1";
     results = xpath.select(nameSelector, doc);
     const name = results[0].firstChild.data ?? "";
-    const url = `https://finnhub.io/api/logo?symbol=${ticker}`;
 
     return {
         data: [],

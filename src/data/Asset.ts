@@ -1,6 +1,5 @@
 export type AssetPreview = {
     ticker: string;
-    url: string;
     name: string;
 };
 export interface OHLCV {
