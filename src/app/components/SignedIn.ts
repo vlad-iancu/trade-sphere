@@ -3,7 +3,12 @@ import { Session } from "next-auth";
 import { redirect } from "next/navigation";
 
 export default async function SignIn(): Promise<Session> {
-    const session = await auth();
+    let session: Session | null;
+    try {
+        session = await auth();
+    } catch (e) {
+        redirect("/login");
+    }
     if (!session) {
         redirect("/login");
     }
