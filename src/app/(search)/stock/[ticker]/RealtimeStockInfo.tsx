@@ -55,9 +55,9 @@ export default function RealtimeStockInfo({
         <span>We don't have data yet</span>
     );
     return (
-        <div id="stock-div" style={{ height: "100%" }}>
+        <>
             <TickerAvatar ticker={params.ticker} />
             {pricesElements}
-        </div>
+        </>
     );
 }
