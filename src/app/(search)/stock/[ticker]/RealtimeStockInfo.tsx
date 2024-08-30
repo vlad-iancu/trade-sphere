@@ -47,9 +47,9 @@ export default function RealtimeStockInfo({
 
     const pricesElements = assetData ? (
         <>
-            {assetData.realtimePrice}
-            {assetData.realtimePriceChange}
-            {assetData.realtimePriceChangePercent}
+            {assetData.last.price}
+            {assetData.last.priceChange}
+            {assetData.last.priceChangePercent}
         </>
     ) : (
         <span>We don't have data yet</span>

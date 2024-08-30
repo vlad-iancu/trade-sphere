@@ -27,20 +27,27 @@ export const getAssetData = async (ticker: string): Promise<AssetData> => {
     const pricesSelector =
         "//section[@data-testid='quote-price']/div/section//*/span";
     let results: any = xpath.select(pricesSelector, doc);
-    const realtimePrice = results[0].firstChild.data ?? "0";
-    const realtimePriceChange = results[1].firstChild.data ?? "0";
-    const realtimePriceChangePercent = results[2].firstChild.data ?? "0";
+    const marketPrice = results[0].firstChild.data ?? "0";
+    const marketPriceChange = results[1].firstChild.data ?? "0";
+    const marketPriceChangePercent = results[2].firstChild.data ?? "0";
     const nameSelector = "//section[contains(@class, 'container')]/h1";
     results = xpath.select(nameSelector, doc);
     const name = results[0].firstChild.data ?? "";
 
     return {
         data: [],
-        id: { ticker, url, name },
+        id: { ticker, name },
         info: {
-            realtimePrice,
-            realtimePriceChange,
-            realtimePriceChangePercent,
+            last: {
+                price: marketPrice,
+                priceChange: marketPriceChange,
+                priceChangePercent: marketPriceChangePercent,
+            },
+            afterHours: {
+                price: 0,
+                priceChange: 0,
+                priceChangePercent: 0,
+            },
         },
     };
 
