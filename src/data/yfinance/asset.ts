@@ -8,7 +8,12 @@ import { AssetData } from "@/data/Asset";
 
 export const getAssetData = async (ticker: string): Promise<AssetData> => {
     //ticker = "SPY"
-    const res = await axios.get(`https://finance.yahoo.com/quote/${ticker}`);
+    // axios.defaults.headers["Cache-Control"] = "no-cache";
+    // axios.defaults.headers["Pragma"] = "no-cache";
+    // axios.defaults.headers["Expires"] = "0";
+    const res = await axios.get(
+        `https://finance.yahoo.com/quote/${ticker}?custom_user_timestamp=${new Date().getTime()}`
+    );
     const doc = new dom({
         locator: {},
         errorHandler: {
