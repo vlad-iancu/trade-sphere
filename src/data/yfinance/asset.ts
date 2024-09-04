@@ -4,7 +4,48 @@ import xpath from "xpath";
 //import {SelectReturnType} from "xpath"
 import { DOMParser as dom } from "@xmldom/xmldom";
 //import * as cheerio from "cheerio";
-import { AssetData } from "@/data/Asset";
+import { AssetData /* AssetInfo */ } from "@/data/Asset";
+
+/* const sampleInfo: AssetInfo[] = [
+    {
+        last: {
+            price: 100.0,
+            priceChange: 1.0,
+            priceChangePercent: 1.0,
+        },
+        afterHours: {
+            price: 101.0,
+            priceChange: 1.0,
+            priceChangePercent: 1.0,
+        },
+    },
+    {
+        last: {
+            price: 200.0,
+            priceChange: 2.0,
+            priceChangePercent: 2.0,
+        },
+        afterHours: {
+            price: 201.0,
+            priceChange: 2.0,
+            priceChangePercent: 2.0,
+        },
+    },
+    {
+        last: {
+            price: 300.0,
+            priceChange: 3.0,
+            priceChangePercent: 3.0,
+        },
+        afterHours: {
+            price: 301.0,
+            priceChange: 3.0,
+            priceChangePercent: 3.0,
+        },
+    },
+]; */
+
+//let sampleIndex = 0;
 
 export const getAssetData = async (ticker: string): Promise<AssetData> => {
     //ticker = "SPY"
@@ -29,15 +70,17 @@ export const getAssetData = async (ticker: string): Promise<AssetData> => {
     let results: any = xpath.select(pricesSelector, doc);
     const marketPrice = results[0].firstChild.data ?? "0";
     const marketPriceChange = results[1].firstChild.data ?? "0";
-    const marketPriceChangePercent = results[2].firstChild.data ?? "0";
+    const marketPriceChangePercent = (
+        results[2].firstChild.data ?? "0"
+    ).replace(/[^0-9.+-]/g, "");
     const nameSelector = "//section[contains(@class, 'container')]/h1";
     results = xpath.select(nameSelector, doc);
     const name = results[0].firstChild.data ?? "";
-
+    //sampleIndex++;
     return {
         data: [],
         id: { ticker, name },
-        info: {
+        info: /* sampleInfo[(sampleIndex - 1) % sampleInfo.length] */ {
             last: {
                 price: marketPrice,
                 priceChange: marketPriceChange,
