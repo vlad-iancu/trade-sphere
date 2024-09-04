@@ -1,7 +1,9 @@
 "use server";
+import SignedIn from "@/app/components/SignedIn";
 import axios from "axios";
 
 export async function getMgmtApiToken(): Promise<string> {
+    await SignedIn();
     // console.log(`url is ${process.env.AUTH_AUTH0_ISSUER + '/oauth/token'}`)
     // console.log(`client id is ${process.env.AUTH_AUTH0_API_ID}`)
     // console.log(`client secret is ${process.env.AUTH_AUTH0_API_SECRET}`)

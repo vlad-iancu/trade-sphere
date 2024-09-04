@@ -1,10 +1,10 @@
 import { Pencil } from "lucide-react";
 import ProfilePicture from "./ProfilePicture";
-import { auth } from "@/auth";
 import { getPictureUrlForUser } from "@/data/user";
 import Link from "next/link";
 import { getUser } from "@/actions/user/getUser";
 import styles from "@/styles/Profile.module.scss";
+import SignedIn from "../components/SignedIn";
 
 export default async function Profile() {
     // const { data: session, status } = useSession()
@@ -17,7 +17,7 @@ export default async function Profile() {
     // useEffect(() => {
     //     setImgSrc(session?.auth0Picture ?? "")
     // },[session])
-    const session = await auth();
+    const session = await SignedIn();
     // if (!session?.user) {
     //     redirect("/login")
     // }

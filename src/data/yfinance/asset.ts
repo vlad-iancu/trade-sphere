@@ -5,6 +5,7 @@ import xpath from "xpath";
 import { DOMParser as dom } from "@xmldom/xmldom";
 //import * as cheerio from "cheerio";
 import { AssetData /* AssetInfo */ } from "@/data/Asset";
+import SignedIn from "@/app/components/SignedIn";
 
 /* const sampleInfo: AssetInfo[] = [
     {
@@ -48,6 +49,7 @@ import { AssetData /* AssetInfo */ } from "@/data/Asset";
 //let sampleIndex = 0;
 
 export const getAssetData = async (ticker: string): Promise<AssetData> => {
+    await SignedIn();
     //ticker = "SPY"
     // axios.defaults.headers["Cache-Control"] = "no-cache";
     // axios.defaults.headers["Pragma"] = "no-cache";
