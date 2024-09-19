@@ -41,3 +41,5 @@ tradesphere-*.json
 extract_tickers.py
 ibm*.json
 tickers.*
+
+dist/

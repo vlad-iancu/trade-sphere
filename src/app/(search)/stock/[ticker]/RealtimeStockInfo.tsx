@@ -7,7 +7,7 @@ import styles from "@/styles/Stock.module.scss";
 
 export default function RealtimeStockInfo({
     params,
-    timeout = 1000 * 10,
+    timeout = 1000 * 20,
     initialData,
 }: {
     params: { ticker: string };
