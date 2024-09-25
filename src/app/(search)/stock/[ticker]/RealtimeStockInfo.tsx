@@ -4,6 +4,7 @@ import { AssetInfo } from "@/data/Asset";
 import { getAssetData } from "@/data/yfinance/asset";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "@/styles/Stock.module.scss";
+import { io, Socket } from "socket.io-client";
 
 export default function RealtimeStockInfo({
     params,
@@ -16,7 +17,7 @@ export default function RealtimeStockInfo({
 }) {
     const [assetData, setAssetData] = useState<AssetInfo>(initialData);
     const [priceClasses, setPriceClasses] = useState({
-        //price: "",
+        price: "",
         priceChange: "",
         priceChangePercent: "",
     });
@@ -25,11 +26,94 @@ export default function RealtimeStockInfo({
         return price >= 0.0 ? "gain" : "loss";
     }, []);
 
-    //const priceRef = useRef<HTMLSpanElement>(null);
+    const priceRef = useRef<HTMLSpanElement>(null);
     const priceChangeRef = useRef<HTMLSpanElement>(null);
     const priceChangePercentRef = useRef<HTMLSpanElement>(null);
+    const [socket, setSocket] = useState<Socket | null>(null);
+
+    const priceRegex = /^(.*)MarketPrice$/;
+    const priceChangeRegex = /^(.*)MarketChange$/;
+    const priceChangePercentRegex = /^(.*)MarketChangePercent$/;
 
     useEffect(() => {
+        const socket = io();
+        setSocket(socket);
+        socket.on("connect", () => {
+            console.log("connected");
+            socket.emit("message", params.ticker);
+        });
+        socket.on("message", (msg: string) => {
+            const comps = msg.split(" ");
+            console.log("message: " + msg);
+            console.log(`first comp is ${comps[0]}`);
+            if (comps[0] == "regularMarketPrice") {
+                console.log("regularMarketPrice: " + msg);
+                //setMessage(comps[1]);
+            }
+            
+            if (comps[0].match(priceRegex)) {
+                const price = parseFloat(comps[1]);
+                setAssetData((prev) => {
+                    return {
+                        ...prev,
+                        last: {
+                            ...prev.last,
+                            price,
+                        },
+                    };
+                });
+                priceRef.current?.classList.add(
+                    styles[
+                        `${getPriceClass(price - assetData.last.price)}-animation`
+                    ]
+                );
+            }
+
+            if (comps[0].match(priceChangeRegex)) {
+                const priceChange = parseFloat(comps[1]);
+                setAssetData((prev) => {
+                    return {
+                        ...prev,
+                        last: {
+                            ...prev.last,
+                            priceChange,
+                        },
+                    };
+                });
+                priceChangeRef.current?.classList.add(
+                    styles[
+                        `${getPriceClass(priceChange - assetData.last.priceChange)}-animation`
+                    ]
+                );
+            }
+            if (comps[0].match(priceChangePercentRegex)) {
+                const priceChangePercent = parseFloat(
+                    comps[1].replace(/[^0-9.+-]/g, "")
+                );
+                setAssetData((prev) => {
+                    return {
+                        ...prev,
+                        last: {
+                            ...prev.last,
+                            priceChangePercent,
+                        },
+                    };
+                });
+                priceChangePercentRef.current?.classList.add(
+                    styles[
+                        `${getPriceClass(priceChangePercent - assetData.last.priceChangePercent)}-animation`
+                    ]
+                );
+            }
+        });
+        const dataCopy = { ...assetData };
+        
+        return () => {
+            socket.disconnect();
+            setSocket(null);
+        };
+    }, []);
+    /* useEffect(() => {
         const intervalId = setInterval(async () => {
             const data = (await getAssetData(params.ticker)).info;
             console.log(data);
@@ -42,13 +126,13 @@ export default function RealtimeStockInfo({
                 return;
             }
 
-            /* if (data.last.price != assetData.last.price) {
+            if (data.last.price != assetData.last.price) {
                 priceRef.current?.classList.add(
                     styles[
                         `${getPriceClass(data.last.price - assetData.last.price)}-animation`
                     ]
                 );
-            } */
+            }
             if (data.last.priceChange != assetData.last.priceChange) {
                 priceChangeRef.current?.classList.add(
                     styles[
@@ -72,10 +156,10 @@ export default function RealtimeStockInfo({
             clearInterval(intervalId);
         };
     }, [timeout, assetData, getPriceClass]);
-
+ */
     useEffect(() => {
         setPriceClasses({
-            //price: getPriceClass(assetData.last.price),
+            price: getPriceClass(assetData.last.price),
             priceChange: getPriceClass(assetData.last.priceChange),
             priceChangePercent: getPriceClass(
                 assetData.last.priceChangePercent
@@ -95,11 +179,11 @@ export default function RealtimeStockInfo({
         <>
             <div>
                 <span
-                    //ref={priceRef}
-                    className={styles["price"]}
-                    /* onAnimationEnd={() => {
+                    ref={priceRef}
+                    className={styles[priceClasses.price]}
+                    onAnimationEnd={() => {
                         removeAnimation(priceRef);
-                    }} */
+                    }}
                 >
                     {assetData.last.price}
                 </span>
