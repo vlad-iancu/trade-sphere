@@ -50,10 +50,15 @@ export default function RealtimeStockInfo({
                 console.log("regularMarketPrice: " + msg);
                 //setMessage(comps[1]);
             }
-            
+
             if (comps[0].match(priceRegex)) {
                 const price = parseFloat(comps[1]);
                 setAssetData((prev) => {
+                    priceRef.current?.classList.add(
+                        styles[
+                            `${getPriceClass(price - prev.last.price)}-animation`
+                        ]
+                    );
                     return {
                         ...prev,
                         last: {
@@ -62,16 +67,19 @@ export default function RealtimeStockInfo({
                         },
                     };
                 });
-                priceRef.current?.classList.add(
-                    styles[
-                        `${getPriceClass(price - assetData.last.price)}-animation`
-                    ]
-                );
             }
 
             if (comps[0].match(priceChangeRegex)) {
                 const priceChange = parseFloat(comps[1]);
                 setAssetData((prev) => {
+                    console.log(
+                        `difference in price change ${priceChange - prev.last.priceChange}`
+                    );
+                    priceChangeRef.current?.classList.add(
+                        styles[
+                            `${getPriceClass(priceChange - prev.last.priceChange)}-animation`
+                        ]
+                    );
                     return {
                         ...prev,
                         last: {
@@ -80,17 +88,17 @@ export default function RealtimeStockInfo({
                         },
                     };
                 });
-                priceChangeRef.current?.classList.add(
-                    styles[
-                        `${getPriceClass(priceChange - assetData.last.priceChange)}-animation`
-                    ]
-                );
             }
             if (comps[0].match(priceChangePercentRegex)) {
                 const priceChangePercent = parseFloat(
                     comps[1].replace(/[^0-9.+-]/g, "")
                 );
                 setAssetData((prev) => {
+                    priceChangePercentRef.current?.classList.add(
+                        styles[
+                            `${getPriceClass(priceChangePercent - assetData.last.priceChangePercent)}-animation`
+                        ]
+                    );
                     return {
                         ...prev,
                         last: {
@@ -99,15 +107,10 @@ export default function RealtimeStockInfo({
                         },
                     };
                 });
-                priceChangePercentRef.current?.classList.add(
-                    styles[
-                        `${getPriceClass(priceChangePercent - assetData.last.priceChangePercent)}-animation`
-                    ]
-                );
             }
         });
         const dataCopy = { ...assetData };
-        
+
         return () => {
             socket.disconnect();
             setSocket(null);
