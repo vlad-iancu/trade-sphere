@@ -4,11 +4,19 @@
         "outDir": "dist",
         "module": "esnext",
 
-        
         //"target": "esnext",
         "types": ["node"],
         "noEmit": false,
-        "isolatedModules": false
+        "isolatedModules": false,
+        "paths": {
+            "@/*": ["./src/*"]
+        }
     },
-    "include": ["server.ts"]
+    "include": ["server.ts"],
+    "tsc-alias": {
+        "resolveFullPaths": true,
+        /* "paths": {
+            "@/*": ["./src/*"]
+        } */
+    }
 }
