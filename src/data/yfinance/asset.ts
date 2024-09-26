@@ -79,7 +79,6 @@ export const getAssetData = async (ticker: string): Promise<AssetData> => {
     results = xpath.select(nameSelector, doc);
     const name = results[0].firstChild.data ?? "";
     //sampleIndex++;
-    
     //Make it so that when a user browses a stock page, there will be a real time websocket connection to the server which would stream data from
     // a puppeteer instance that would be running in the background. The puppeteer instance would be scraping the data from the yahoo finance page
     return {

@@ -6,35 +6,41 @@ let tickerPages = new Map<
     string,
     { page: puppeteer.Page; sockets: Socket[] }
 >();
-async function delay(time: number): Promise<void> {
-    return new Promise(function (resolve) {
-        setTimeout(resolve, time);
-    });
-}
-async function skipTerms(page: puppeteer.Page) {
-    await page.waitForSelector("button[type='submit'][name='agree']");
-    //readline.question('Press any key to continue...');
-    await page.waitForSelector("button[id='scroll-down-btn']");
-    await page.click("button[id='scroll-down-btn']");
-    const element = await page.$("button[type='submit'][name='agree']");
-    await element?.scrollIntoView();
-    //readline.question('Press any key to continue...');
-    console.log("Agreeing to terms");
-    /* const navigationPromise = page.waitForNavigation({ waitUntil: "load" });
-  await page.click("button[type='submit'][name='agree']");
-  await navigationPromise; */
 
-    /* page.click("button[type='submit'][name='agree']")
-  await page.waitForNavigation({ waitUntil: "load" }); */
-    //navigationPromise = page.waitForNavigation({ waitUntil: "load" });
-    await page.click("button[type='submit'][name='agree']");
+async function skipTerms(page: puppeteer.Page) {
+    const navigationPromise = page.waitForNavigation({
+        waitUntil: "domcontentloaded",
+    });
+    await page.evaluate(`
+        (async () => {
+        const formAction = window.location.href;
+        const formData = new URLSearchParams();
+
+        const form = document.querySelector(".consent-form");
+        const csrfToken = form.querySelector("input[name='csrfToken']").value;
+        const sessionId = form.querySelector("input[name='sessionId']").value;
+        const originalDoneUrl = form.querySelector(
+            "input[name='originalDoneUrl']"
+        ).value;
+        const namespace = form.querySelector("input[name='namespace']").value;
+        formData.append("csrfToken", csrfToken);
+        formData.append("sessionId", sessionId);
+        formData.append("originalDoneUrl", originalDoneUrl);
+        formData.append("namespace", namespace);
+        formData.append("agree", "agree");
+        formData.append("agree", "agree");
+        const reject = form.querySelector("button[name='reject']");
+        reject.remove();
+        
+        await form.submit();   
+    })();     
+    `);
+    await navigationPromise;
+
     await page.waitForSelector(
         "section[data-testid='quote-price'] div section div:nth-child(1) fin-streamer"
     );
-    await delay(2000);
-}
-function print_server(msg: string) {
-    console.log(msg);
+    //await delay(2000);
 }
 
 function send_to_client(priceType: string, priceText: string, ticker: string) {
@@ -43,18 +49,13 @@ function send_to_client(priceType: string, priceText: string, ticker: string) {
     console.log(`Is entry undefined? ${entry == undefined}`); */
     if (entry) {
         const { sockets } = entry;
-        /* console.log("Is socket null? " + (socket == null));
-        console.log("Is socket undefined? " + (socket == undefined));
-        console.log("Sending to client"); */
         for (const socket of sockets) {
             socket.emit("message", `${priceType} ${priceText}`);
         }
     }
-    // console.log(msg);
 }
 export async function createTickerPage(
-    ticker: string,
-    socket: Socket
+    ticker: string
 ): Promise<puppeteer.Page> {
     const browser = await puppeteer.launch({
         //executablePath: "/usr/bin/google-chrome",
@@ -62,7 +63,6 @@ export async function createTickerPage(
         devtools: true,
     });
     const page = await browser.newPage();
-    await page.exposeFunction("print_server", print_server);
     await page.exposeFunction("send_to_client", send_to_client);
     await page.goto(`https://finance.yahoo.com/quote/${ticker}`, {
         waitUntil: "networkidle2",
@@ -71,6 +71,7 @@ export async function createTickerPage(
     await skipTerms(page);
     //console.log("Skipped terms");
     await page.evaluate(() => {
+        /* eslint-disable */
         //print_server("Evaluating");
         //console.log("Evaluating");
         const spanFinstreamerSelector =
@@ -85,65 +86,41 @@ export async function createTickerPage(
                     const priceText = node.textContent;
                     const priceType = parent?.getAttribute("data-field");
                     const symbol = parent?.getAttribute("data-symbol");
-                    /* print_server(
-                        `priceType: ${priceType}, priceText: ${priceText}`
-                    ); */
                     send_to_client(priceType!, priceText!, symbol!);
-                    /* console.log(
-                        `priceType: ${priceType}, priceText: ${priceText}`
-                    ); */
                 }
-                /* console.log("mutation: " + mutation); */
             });
         });
         const config = { attributes: true, childList: true, subtree: true };
         spans.forEach((span) => {
             observer.observe(span, config);
         });
+        /* eslint-enable */
     });
     return page;
 }
 export async function connect(socket: Socket) {
-    /* const io = new Server();
-    io.on("connection", (socket) => {
-        console.log("a user connected");
-        socket.on("disconnect", () => {
-            console.log("user disconnected");
-        });
-    }); */
     socket.on("message", async (msg: string) => {
-        //console.log("message (on server): " + msg);
         const ticker: string = msg;
-        if(tickerPages.has(ticker)) {
+        if (tickerPages.has(ticker)) {
             const entry = tickerPages.get(ticker);
-            if(entry) {
+            if (entry) {
                 entry.sockets.push(socket);
-                //console.log(`Added socket to ${ticker}`);
             }
-        }
-        else {
-            console.log(`Creating page for ${ticker}`);
-            const page = await createTickerPage(ticker, socket);
+        } else {
+            const page = await createTickerPage(ticker);
             tickerPages.set(ticker, { page, sockets: [socket] });
-            //console.log(`Set page for ${ticker}`);
         }
-        /* const page = await createTickerPage(ticker, socket);
-        tickerPages.set(ticker, { page, socket }); */
-        //tickerPages.set("AAPL", {page, socket});
     });
     socket.on("disconnect", () => {
         // Delete the page associated with the socket
         tickerPages.forEach((value, key) => {
             if (value.sockets.includes(socket)) {
                 value.sockets.splice(value.sockets.indexOf(socket), 1);
-                //console.log(`Deleted socket from ${key}`);
-                if(value.sockets.length == 0) {
+                if (value.sockets.length == 0) {
                     value.page.browser().close();
                     tickerPages.delete(key);
-                    //console.log("Deleted page for ticker " + key);
                 }
             }
         });
-        console.log(`Now there are ${tickerPages.size} pages`);
     });
 }

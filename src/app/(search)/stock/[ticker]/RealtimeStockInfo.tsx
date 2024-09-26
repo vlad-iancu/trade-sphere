@@ -1,14 +1,12 @@
 /* eslint-env browser */
 "use client";
 import { AssetInfo } from "@/data/Asset";
-import { getAssetData } from "@/data/yfinance/asset";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "@/styles/Stock.module.scss";
-import { io, Socket } from "socket.io-client";
+import { io } from "socket.io-client";
 
 export default function RealtimeStockInfo({
     params,
-    timeout = 1000 * 20,
     initialData,
 }: {
     params: { ticker: string };
@@ -29,7 +27,6 @@ export default function RealtimeStockInfo({
     const priceRef = useRef<HTMLSpanElement>(null);
     const priceChangeRef = useRef<HTMLSpanElement>(null);
     const priceChangePercentRef = useRef<HTMLSpanElement>(null);
-    const [socket, setSocket] = useState<Socket | null>(null);
 
     const priceRegex = /^(.*)MarketPrice$/;
     const priceChangeRegex = /^(.*)MarketChange$/;
@@ -37,7 +34,6 @@ export default function RealtimeStockInfo({
 
     useEffect(() => {
         const socket = io();
-        setSocket(socket);
         socket.on("connect", () => {
             console.log("connected");
             socket.emit("message", params.ticker);
@@ -109,11 +105,9 @@ export default function RealtimeStockInfo({
                 });
             }
         });
-        const dataCopy = { ...assetData };
 
         return () => {
             socket.disconnect();
-            setSocket(null);
         };
     }, []);
     /* useEffect(() => {
