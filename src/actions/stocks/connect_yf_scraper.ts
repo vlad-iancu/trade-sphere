@@ -42,6 +42,11 @@ async function skipTerms(page: puppeteer.Page) {
     );
     //await delay(2000);
 }
+async function delay(time: number): Promise<void> {
+    return new Promise(function (resolve) {
+        setTimeout(resolve, time);
+    });
+}
 
 function send_to_client(priceType: string, priceText: string, ticker: string) {
     const entry = tickerPages.get(ticker);
@@ -54,6 +59,11 @@ function send_to_client(priceType: string, priceText: string, ticker: string) {
         }
     }
 }
+
+function server_print(msg: string) {
+    console.log(msg);
+}
+
 export async function createTickerPage(
     ticker: string
 ): Promise<puppeteer.Page> {
@@ -64,12 +74,13 @@ export async function createTickerPage(
     });
     const page = await browser.newPage();
     await page.exposeFunction("send_to_client", send_to_client);
+    await page.exposeFunction("server_print", server_print);
     await page.goto(`https://finance.yahoo.com/quote/${ticker}`, {
         waitUntil: "networkidle2",
     });
     //
     await skipTerms(page);
-    //console.log("Skipped terms");
+    console.log("Skipped terms");
     await page.evaluate(() => {
         /* eslint-disable */
         //print_server("Evaluating");
@@ -77,6 +88,23 @@ export async function createTickerPage(
         const spanFinstreamerSelector =
             "section[data-testid='quote-price'] div section div fin-streamer span";
         const spans = document.querySelectorAll(spanFinstreamerSelector);
+        const lastSpanFinstreamerSelector =
+            "section[data-testid='quote-price'] div section:last-child  div:nth-child(1) fin-streamer span";
+        /* const lastSpans = document.querySelectorAll(
+            lastSpanFinstreamerSelector
+        ); */
+        /* const intervalId = setInterval(() => {
+            lastSpans.forEach((span) => {
+                const priceText = span.textContent;
+                const priceType =
+                    span.parentElement?.getAttribute("data-field");
+                const symbol = span.parentElement?.getAttribute("data-symbol");
+                send_to_client(priceType!, priceText!, symbol!);
+                server_print(
+                    `Send last spans to client: ${priceType} ${priceText}`
+                );
+            });
+        }, 50); */
         // Attach a mutation observer to the span elements
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -87,6 +115,8 @@ export async function createTickerPage(
                     const priceType = parent?.getAttribute("data-field");
                     const symbol = parent?.getAttribute("data-symbol");
                     send_to_client(priceType!, priceText!, symbol!);
+                    //server_print("Send to client");
+                    //clearInterval(intervalId);
                 }
             });
         });
@@ -95,6 +125,21 @@ export async function createTickerPage(
             observer.observe(span, config);
         });
         /* eslint-enable */
+    });
+    await delay(100);
+    const lastSpanFinstreamerSelector =
+        "section[data-testid='quote-price'] div section:last-child  div:nth-child(1) fin-streamer span";
+    const lastSpans = await page.$$(lastSpanFinstreamerSelector);
+    lastSpans.forEach(async (span) => {
+        const priceText = await span.evaluate((node) => node.textContent);
+        const priceType = await span.evaluate(
+            (node) => node.parentElement?.getAttribute("data-field")
+        );
+        const symbol = await span.evaluate(
+            (node) => node.parentElement?.getAttribute("data-symbol")
+        );
+        send_to_client(priceType!, priceText!, symbol!);
+        //server_print(`Send last spans to client: ${priceType} ${priceText}`);
     });
     return page;
 }
