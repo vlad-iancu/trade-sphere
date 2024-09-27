@@ -92,7 +92,7 @@ export default function RealtimeStockInfo({
                 setAssetData((prev) => {
                     priceChangePercentRef.current?.classList.add(
                         styles[
-                            `${getPriceClass(priceChangePercent - assetData.last.priceChangePercent)}-animation`
+                            `${getPriceClass(priceChangePercent - prev.last.priceChangePercent)}-animation`
                         ]
                     );
                     return {
