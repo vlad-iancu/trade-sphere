@@ -1,6 +1,8 @@
 //"use server";
 import { Socket } from "socket.io";
 import * as puppeteer from "puppeteer";
+import { decode } from "@auth/core/jwt";
+import cookie from "cookie";
 
 let tickerPages = new Map<
     string,
@@ -11,6 +13,7 @@ async function skipTerms(page: puppeteer.Page) {
     const navigationPromise = page.waitForNavigation({
         waitUntil: "domcontentloaded",
     });
+
     await page.evaluate(`
         (async () => {
         const formAction = window.location.href;
@@ -132,11 +135,11 @@ export async function createTickerPage(
     const lastSpans = await page.$$(lastSpanFinstreamerSelector);
     lastSpans.forEach(async (span) => {
         const priceText = await span.evaluate((node) => node.textContent);
-        const priceType = await span.evaluate(
-            (node) => node.parentElement?.getAttribute("data-field")
+        const priceType = await span.evaluate((node) =>
+            node.parentElement?.getAttribute("data-field")
         );
-        const symbol = await span.evaluate(
-            (node) => node.parentElement?.getAttribute("data-symbol")
+        const symbol = await span.evaluate((node) =>
+            node.parentElement?.getAttribute("data-symbol")
         );
         send_to_client(priceType!, priceText!, symbol!);
         //server_print(`Send last spans to client: ${priceType} ${priceText}`);
@@ -145,6 +148,26 @@ export async function createTickerPage(
 }
 export async function connect(socket: Socket) {
     socket.on("message", async (msg: string) => {
+        //const token = socket.handshake.headers.
+        if (!socket.handshake.headers.cookie) {
+            socket.disconnect();
+            return;
+        }
+        const token = cookie.parse(socket.handshake.headers["cookie"] ?? "")[
+            "authjs.session-token"
+        ];
+        //console.log(`Token: ${token}`);
+        const decodedToken = await decode({
+            token,
+            secret: process.env.AUTH_SECRET ?? "",
+            salt: "authjs.session-token", // __Secure-authjs.session-token
+        });
+        if (decodedToken == null) {
+            socket.disconnect();
+            return;
+        } /*  else {
+            console.log(`Decoded token id: ${decodedToken?.auth0Id}`);
+        } */
         const ticker: string = msg;
         if (tickerPages.has(ticker)) {
             const entry = tickerPages.get(ticker);

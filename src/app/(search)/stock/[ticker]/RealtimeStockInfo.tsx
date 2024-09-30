@@ -100,7 +100,7 @@ export default function RealtimeStockInfo({
             socket.disconnect();
         };
     }, []);
-    
+
     useEffect(() => {
         setPriceClasses({
             price: getPriceClass(assetData.last.price),

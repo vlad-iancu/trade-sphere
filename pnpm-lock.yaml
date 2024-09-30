@@ -23,6 +23,9 @@ importers:
       '@supabase/supabase-js':
         specifier: ^2.44.4
         version: 2.45.2
+      '@types/cookie':
+        specifier: ^0.6.0
+        version: 0.6.0
       '@xmldom/xmldom':
         specifier: ^0.8.10
         version: 0.8.10
@@ -35,6 +38,9 @@ importers:
       cheerio:
         specifier: ^1.0.0
         version: 1.0.0
+      cookie:
+        specifier: ^0.6.0
+        version: 0.6.0
       lucide-react:
         specifier: ^0.418.0
         version: 0.418.0(react@18.3.1)
@@ -2697,7 +2703,7 @@ snapshots:
       '@babel/traverse': 7.25.4
       '@babel/types': 7.25.4
       convert-source-map: 2.0.0
-      debug: 4.3.6
+      debug: 4.3.7
       gensync: 1.0.0-beta.2
       json5: 2.2.3
       semver: 6.3.1
