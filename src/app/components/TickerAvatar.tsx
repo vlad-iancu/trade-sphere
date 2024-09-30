@@ -1,6 +1,6 @@
 import styles from "@/styles/Ticker.module.scss";
 
-export default async function TickerAvatar({
+export default function TickerAvatar({
     ticker,
     width = 48,
     height = 48,

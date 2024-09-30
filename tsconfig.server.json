@@ -1,0 +1,22 @@
+{
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "outDir": "dist",
+        "module": "esnext",
+
+        //"target": "esnext",
+        "types": ["node"],
+        "noEmit": false,
+        "isolatedModules": false,
+        "paths": {
+            "@/*": ["./src/*"]
+        }
+    },
+    "include": ["server.ts"],
+    "tsc-alias": {
+        "resolveFullPaths": true,
+        /* "paths": {
+            "@/*": ["./src/*"]
+        } */
+    }
+}

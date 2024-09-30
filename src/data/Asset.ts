@@ -1,6 +1,5 @@
 export type AssetPreview = {
     ticker: string;
-    url: string;
     name: string;
 };
 export interface OHLCV {
@@ -13,10 +12,15 @@ export interface OHLCV {
 
 export type Candle = OHLCV;
 
+export type AssetAttributes = {
+    price: number;
+    priceChange: number;
+    priceChangePercent: number;
+};
+
 export type AssetInfo = {
-    realtimePrice: number;
-    realtimePriceChange: number;
-    realtimePriceChangePercent: number;
+    last: AssetAttributes;
+    afterHours?: AssetAttributes;
 };
 export type AssetData = {
     id: AssetPreview;

@@ -1,4 +1,5 @@
 "use server";
+import SignedIn from "@/app/components/SignedIn";
 import supabase, { SupabaseAction } from "@/utils/supabase";
 
 export async function setPictureUrlForUser(
@@ -6,12 +7,14 @@ export async function setPictureUrlForUser(
     pictureUrl: string
 ): Promise<SupabaseAction> {
     //Insert the user and the picture url into a supabase table that has the "id" as primary column and "picture_url" as a string column
+    await SignedIn();
     return supabase
         .from("users")
         .upsert([{ id: userId, picture_url: pictureUrl }]);
 }
 
 export async function getPictureUrlForUser(userId: string): Promise<string> {
+    await SignedIn();
     const { data, error } = await supabase
         .from("users")
         .select("picture_url")
@@ -24,6 +27,7 @@ export async function getPictureUrlForUser(userId: string): Promise<string> {
 }
 
 export async function getNameForUser(userId: string): Promise<string> {
+    await SignedIn();
     const { data, error } = await supabase
         .from("users")
         .select("name")
@@ -39,6 +43,7 @@ export async function setNameForUser(
     userId: string,
     name: string
 ): Promise<SupabaseAction> {
+    await SignedIn();
     const result = supabase.from("users").upsert([{ id: userId, name: name }]);
     return result;
 }
@@ -48,6 +53,7 @@ export async function setDbUser(
     name: string,
     pictureUrl: string
 ): Promise<[SupabaseAction, SupabaseAction]> {
+    await SignedIn();
     return Promise.all([
         setNameForUser(userId, name),
         setPictureUrlForUser(userId, pictureUrl),

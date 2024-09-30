@@ -1,10 +1,14 @@
 "use server";
+
+import SignedIn from "@/app/components/SignedIn";
+
 export interface SearchResult {
     ticker: string;
     name: string;
 }
 
 export async function search(query: string): Promise<SearchResult[]> {
+    await SignedIn();
     const response = await fetch(
         `https://query2.finance.yahoo.com/v1/finance/search?q=${query}&quotesCount=6&newsCount=0`
     );

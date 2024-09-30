@@ -72,6 +72,7 @@ export default function Search() {
                         }}
                     >
                         {result.ticker}
+                        <span>{` - ${result.name}`}</span>
                     </a>
                 ))}
         </div>
