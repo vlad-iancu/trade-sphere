@@ -119,6 +119,9 @@ export default function RealtimeStockInfo({
         []
     );
 
+    const formatDifference = useCallback((nr: number) => {
+        return nr >= 0 ? `+${nr}` : nr;
+    }, []);
     return (
         <>
             <div>
@@ -138,7 +141,7 @@ export default function RealtimeStockInfo({
                         removeAnimation(priceChangeRef);
                     }}
                 >
-                    {assetData.last.priceChange}
+                    {formatDifference(assetData.last.priceChange)}
                 </span>
                 <span
                     className={styles[priceClasses.priceChangePercent]}
@@ -147,7 +150,7 @@ export default function RealtimeStockInfo({
                         removeAnimation(priceChangePercentRef);
                     }}
                 >
-                    {assetData.last.priceChangePercent}
+                    {formatDifference(assetData.last.priceChangePercent)}
                     {"%"}
                 </span>
             </div>
