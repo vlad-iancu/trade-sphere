@@ -4,12 +4,10 @@ import { redirect } from "next/navigation";
 
 export default async function SignIn(): Promise<Session> {
     let session: Session | null = null;
-    try {
-        session = await auth();
-    } finally {
-        if (!session) {
-            redirect("/login");
-        }
+    session = await auth();
+    if (!session) {
+        console.log("No session found");
+        redirect("/login");
     }
     return session;
 }
