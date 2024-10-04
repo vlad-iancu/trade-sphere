@@ -33,16 +33,21 @@ export default function RealtimeStockInfo({
     const priceChangePercentRegex = /^(.*)MarketChangePercent$/;
 
     useEffect(() => {
-        const socket = io();
-        socket.on("connect", () => {
-            socket.emit("message", params.ticker);
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 3,
+            timeout: 20000,
         });
         socket.on("message", (msg: string) => {
             const comps = msg.split(" ");
-
+            console.log(msg);
             if (comps[0].match(priceRegex)) {
                 const price = parseFloat(comps[1]);
+                console.log(`Price: ${price}`);
                 setAssetData((prev) => {
+                    if (prev.last.price === price) return prev;
                     priceRef.current?.classList.add(
                         styles[
                             `${getPriceClass(price - prev.last.price)}-animation`
@@ -61,6 +66,7 @@ export default function RealtimeStockInfo({
             if (comps[0].match(priceChangeRegex)) {
                 const priceChange = parseFloat(comps[1]);
                 setAssetData((prev) => {
+                    if (prev.last.priceChange === priceChange) return prev;
                     priceChangeRef.current?.classList.add(
                         styles[
                             `${getPriceClass(priceChange - prev.last.priceChange)}-animation`
@@ -80,6 +86,8 @@ export default function RealtimeStockInfo({
                     comps[1].replace(/[^0-9.+-]/g, "")
                 );
                 setAssetData((prev) => {
+                    if (prev.last.priceChangePercent === priceChangePercent)
+                        return prev;
                     priceChangePercentRef.current?.classList.add(
                         styles[
                             `${getPriceClass(priceChangePercent - prev.last.priceChangePercent)}-animation`
@@ -94,6 +102,9 @@ export default function RealtimeStockInfo({
                     };
                 });
             }
+        });
+        socket.on("connect", () => {
+            socket.emit("message", params.ticker);
         });
 
         return () => {

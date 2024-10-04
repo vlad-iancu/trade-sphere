@@ -1,14 +1,24 @@
+/* eslint-env node */
 //"use server";
 import { Socket } from "socket.io";
 import * as puppeteer from "puppeteer";
 import { decode } from "@auth/core/jwt";
 import cookie from "cookie";
 
+/* eslint-disable */
 let tickerPages = new Map<
     string,
-    { page: puppeteer.Page; sockets: Socket[] }
+    { page: puppeteer.Page; sockets: Socket[]; timer?: NodeJS.Timeout }
 >();
-
+/* eslint-enable */
+function printServerStatus() {
+    const keys = Array.from(tickerPages.keys());
+    for (const key of keys) {
+        console.log(
+            `Key: ${key}, sockets: ${tickerPages.get(key)?.sockets.length}`
+        );
+    }
+}
 async function skipTerms(page: puppeteer.Page) {
     const navigationPromise = page.waitForNavigation({
         waitUntil: "domcontentloaded",
@@ -55,11 +65,44 @@ function send_to_client(priceType: string, priceText: string, ticker: string) {
     const entry = tickerPages.get(ticker);
     /* console.log(`Is entry null? ${entry == null}`);
     console.log(`Is entry undefined? ${entry == undefined}`); */
+    //console.log(`Ticker: ${ticker}`);
     if (entry) {
+        //console.log(`Entry found for ticker: ${ticker}`);
         const { sockets } = entry;
         for (const socket of sockets) {
             socket.emit("message", `${priceType} ${priceText}`);
+            //console.log(`Send to client: ${priceType} ${priceText}`);
         }
+    }
+}
+async function sendCurrentPrice(socket: Socket, ticker: string) {
+    const entry = tickerPages.get(ticker);
+    if (entry) {
+        const { page } = entry;
+        const priceSelector =
+            "section[data-testid='quote-price'] div section:last-child div:nth-child(1) fin-streamer span";
+        const priceTexts = await page.$$eval(priceSelector, (spans) => {
+            return spans.map((span) => span.textContent);
+        });
+        const priceTypes = await page.$$eval(priceSelector, (spans) => {
+            return spans.map((span) =>
+                span.parentElement?.getAttribute("data-field")
+            );
+        });
+        //Send all prices with their equivalent price type to client
+        priceTexts.forEach((priceText, index) => {
+            const priceType = priceTypes[index];
+            console.log(`Send to existing client: ${priceType} ${priceText}`);
+
+            socket.emit("message", `${priceType} ${priceText}`);
+            console.log(
+                `Send current price to client: ${priceType} ${priceText}`
+            );
+        });
+        //socket.emit("message", `${priceType} ${priceText}`);
+        //console.log(`Sent current price to client: ${priceType} ${priceText}`);
+    } else {
+        console.log(`No entry found for ticker: ${ticker}`);
     }
 }
 
@@ -68,7 +111,8 @@ function server_print(msg: string) {
 }
 
 export async function createTickerPage(
-    ticker: string
+    ticker: string,
+    socket?: Socket
 ): Promise<puppeteer.Page> {
     const browser = await puppeteer.launch({
         //executablePath: "/usr/bin/google-chrome",
@@ -84,6 +128,16 @@ export async function createTickerPage(
     //
     await skipTerms(page);
     console.log("Skipped terms");
+    // Add page to tocker sockets
+    if (socket) {
+        if (tickerPages.has(ticker)) {
+            tickerPages.get(ticker)?.sockets.push(socket);
+            console.log(`Added socket to existing ticker page: ${ticker}`);
+        } else {
+            tickerPages.set(ticker, { page, sockets: [socket] });
+            console.log(`Created new ticker page: ${ticker}`);
+        }
+    }
     await page.evaluate(() => {
         /* eslint-disable */
         //print_server("Evaluating");
@@ -93,21 +147,21 @@ export async function createTickerPage(
         const spans = document.querySelectorAll(spanFinstreamerSelector);
         const lastSpanFinstreamerSelector =
             "section[data-testid='quote-price'] div section:last-child  div:nth-child(1) fin-streamer span";
-        /* const lastSpans = document.querySelectorAll(
+        const lastSpans = document.querySelectorAll(
             lastSpanFinstreamerSelector
-        ); */
-        /* const intervalId = setInterval(() => {
+        );
+        const intervalId = setInterval(() => {
             lastSpans.forEach((span) => {
                 const priceText = span.textContent;
                 const priceType =
                     span.parentElement?.getAttribute("data-field");
                 const symbol = span.parentElement?.getAttribute("data-symbol");
                 send_to_client(priceType!, priceText!, symbol!);
-                server_print(
-                    `Send last spans to client: ${priceType} ${priceText}`
-                );
+                /* server_print(
+                `Send last spans to client: ${priceType} ${priceText}`
+            ); */
             });
-        }, 50); */
+        }, 1000);
         // Attach a mutation observer to the span elements
         const observer = new MutationObserver((mutations) => {
             mutations.forEach((mutation) => {
@@ -146,6 +200,19 @@ export async function createTickerPage(
     });
     return page;
 }
+
+async function recreatePage(ticker: string) {
+    const entry = tickerPages.get(ticker);
+    if (!entry) {
+        return;
+    }
+    const page = await createTickerPage(ticker);
+    const existingPage = entry.page;
+    await existingPage.browser().close();
+    entry.page = page;
+    console.log(`Recreated page for ticker: ${ticker}`);
+}
+
 export async function connect(socket: Socket) {
     socket.on("message", async (msg: string) => {
         //const token = socket.handshake.headers.
@@ -173,11 +240,34 @@ export async function connect(socket: Socket) {
             const entry = tickerPages.get(ticker);
             if (entry) {
                 entry.sockets.push(socket);
+                sendCurrentPrice(socket, ticker);
             }
         } else {
-            const page = await createTickerPage(ticker);
-            tickerPages.set(ticker, { page, sockets: [socket] });
+            await createTickerPage(ticker, socket);
+            const entry = tickerPages.get(ticker);
+            if (entry) {
+                const MINUTES = 60 * 1000;
+                const timer = setInterval(
+                    () => {
+                        recreatePage(ticker);
+                    },
+                    parseFloat(
+                        process.env.STOCK_PRICE_PAGE_RECREATE_INTERVAL ?? "1"
+                    ) * MINUTES
+                );
+                console.log(
+                    `Recreating page once in ${
+                        parseFloat(
+                            process.env.STOCK_PRICE_PAGE_RECREATE_INTERVAL ??
+                                "1"
+                        ) * MINUTES
+                    } milliseconds`
+                );
+                entry.timer = timer;
+            }
+            //tickerPages.set(ticker, { page, sockets: [socket] });
         }
+        printServerStatus();
     });
     socket.on("disconnect", () => {
         // Delete the page associated with the socket
@@ -186,9 +276,14 @@ export async function connect(socket: Socket) {
                 value.sockets.splice(value.sockets.indexOf(socket), 1);
                 if (value.sockets.length == 0) {
                     value.page.browser().close();
+                    if (value.timer) {
+                        clearInterval(value.timer);
+                        console.log(`Cleared timer for ticker: ${key}`);
+                    }
                     tickerPages.delete(key);
                 }
             }
         });
+        printServerStatus();
     });
 }
