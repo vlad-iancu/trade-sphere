@@ -1,4 +1,3 @@
-import { getUserBalance } from "@/data/balance";
 import SignedIn from "../../components/SignedIn";
 
 // import { logout } from "@/actions/logout"
@@ -17,7 +16,7 @@ import SignedIn from "../../components/SignedIn";
 
 export default async function Dashboard() {
     const session = await SignedIn();
-    const balance = getUserBalance(session.auth0Id);
+    const balance = 0
     return (
         <>
             <span>User Balance is {balance}</span>
