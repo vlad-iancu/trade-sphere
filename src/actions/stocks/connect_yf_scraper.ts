@@ -48,11 +48,11 @@ async function skipTerms(page: puppeteer.Page) {
         await form.submit();   
     })();     
     `);
-    await navigationPromise;
-
-    await page.waitForSelector(
+    const selectorPromise =  page.waitForSelector(
         "section[data-testid='quote-price'] div section div:nth-child(1) fin-streamer"
     );
+    const skipPromise = Promise.all([navigationPromise, selectorPromise]);
+    await skipPromise
     //await delay(2000);
 }
 async function delay(time: number): Promise<void> {
