@@ -7,13 +7,12 @@ import { io } from "socket.io-client";
 
 export default function RealtimeStockInfo({
     params,
-    initialData,
 }: {
     params: { ticker: string };
     timeout?: number;
-    initialData: AssetInfo;
 }) {
-    const [assetData, setAssetData] = useState<AssetInfo>(initialData);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [assetData, setAssetData] = useState<AssetInfo>({last: {price: 0, priceChange: 0, priceChangePercent: 0}});
     const [priceClasses, setPriceClasses] = useState({
         price: "",
         priceChange: "",
@@ -41,6 +40,7 @@ export default function RealtimeStockInfo({
             timeout: 20000,
         });
         socket.on("message", (msg: string) => {
+            setIsLoaded(true);
             const comps = msg.split(" ");
             console.log(msg);
             if (comps[0].match(priceRegex)) {
@@ -133,6 +133,9 @@ export default function RealtimeStockInfo({
     const formatDifference = useCallback((nr: number) => {
         return nr >= 0 ? `+${nr}` : nr;
     }, []);
+    if(!isLoaded) {
+        return <div className={styles.loading}>Loading...</div>;
+    }
     return (
         <>
             <div>

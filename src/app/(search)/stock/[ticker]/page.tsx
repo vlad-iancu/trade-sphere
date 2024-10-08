@@ -19,7 +19,7 @@ export default async function Page({ params }: { params: { ticker: string } }) {
     return (
         <div id="stock-div" style={{ height: "100%" }}>
             <TickerAvatar ticker={params.ticker} />
-            <RealtimeStockInfo params={params} initialData={info} />
+            <RealtimeStockInfo params={params} />
         </div>
     );
 }
