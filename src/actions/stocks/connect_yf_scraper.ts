@@ -4,6 +4,7 @@ import { Socket } from "socket.io";
 import * as puppeteer from "puppeteer";
 import { decode } from "@auth/core/jwt";
 import cookie from "cookie";
+import yahooFinance from "yahoo-finance2";
 
 /* eslint-disable */
 let tickerPages = new Map<
@@ -19,7 +20,7 @@ function printServerStatus() {
         );
     }
 }
-async function skipTerms(page: puppeteer.Page) {
+async function skipTerms(page: puppeteer.Page): Promise<boolean> {
     const navigationPromise = page.waitForNavigation({
         waitUntil: "domcontentloaded",
     });
@@ -48,11 +49,22 @@ async function skipTerms(page: puppeteer.Page) {
         await form.submit();   
     })();     
     `);
-    const selectorPromise =  page.waitForSelector(
+    const selectorPromise = page.waitForSelector(
         "section[data-testid='quote-price'] div section div:nth-child(1) fin-streamer"
     );
     const skipPromise = Promise.all([navigationPromise, selectorPromise]);
-    await skipPromise
+
+    try {
+        const failureChance = Math.random();
+        await skipPromise;
+        if (failureChance > 0.7) {
+            throw new Error("Failed to skip consent");
+        }
+    } catch (e) {
+        console.log("Error in skipping consent");
+        return false;
+    }
+    return true;
     //await delay(2000);
 }
 async function delay(time: number): Promise<void> {
@@ -113,7 +125,7 @@ function server_print(msg: string) {
 export async function createTickerPage(
     ticker: string,
     socket?: Socket
-): Promise<puppeteer.Page> {
+): Promise<puppeteer.Page | null> {
     const browser = await puppeteer.launch({
         //executablePath: "/usr/bin/google-chrome",
         headless: true,
@@ -126,7 +138,12 @@ export async function createTickerPage(
         waitUntil: "networkidle2",
     });
     //
-    await skipTerms(page);
+    const skipped = await skipTerms(page);
+    if (!skipped) {
+        console.log("Failed to skip terms");
+        page.browser().close();
+        return null;
+    }
     console.log("Skipped terms");
     // Add page to tocker sockets
     if (socket) {
@@ -206,11 +223,71 @@ async function recreatePage(ticker: string) {
     if (!entry) {
         return;
     }
-    const page = await createTickerPage(ticker);
+    let page = await createTickerPage(ticker);
+    while (page == null) {
+        page = await createTickerPage(ticker);
+    }
     const existingPage = entry.page;
     await existingPage.browser().close();
+
     entry.page = page;
     console.log(`Recreated page for ticker: ${ticker}`);
+    printServerStatus();
+}
+
+async function sendDataFromYfPackage(socket: Socket, ticker: string) {
+    try {
+        const quote = await yahooFinance.quote(ticker);
+        let priceType = "regularMarketPrice";
+        let priceText = quote.regularMarketPrice?.toString() || "N/A";
+        let marketChange = quote.regularMarketChange?.toString() || "N/A";
+        let marketChangePercent =
+            quote.regularMarketChangePercent?.toString() || "N/A";
+        let marketChangeType = "regularMarketChange";
+        let marketChangePercentType = "regularMarketChangePercent";
+
+        if (quote.postMarketPrice) {
+            priceType = "postMarket";
+            priceText = quote.postMarketPrice.toString();
+            marketChange = quote.postMarketChange?.toString() ?? "N/A";
+            marketChangeType = "postMarketChange";
+            marketChangePercentType = "postMarketChangePercent";
+            marketChangePercent =
+                quote.postMarketChangePercent?.toString() || "N/A";
+        } else if (quote.preMarketPrice) {
+            priceType = "preMarket";
+            priceText = quote.preMarketPrice.toString();
+            marketChange = quote.preMarketChange?.toString() ?? "N/A";
+            marketChangeType = "preMarketChange";
+            marketChangePercentType = "preMarketChangePercent";
+            marketChangePercent =
+                quote.preMarketChangePercent?.toString() || "N/A";
+        }
+
+        if (!quote.regularMarketChange) {
+            if (quote.postMarketChange) {
+            } else if (quote.preMarketChange) {
+            }
+        }
+
+        socket.emit("message", `${marketChangeType} ${marketChange}`);
+        socket.emit(
+            "message",
+            `${marketChangePercentType} ${marketChangePercent}`
+        );
+        socket.emit("message", `${priceType} ${priceText}`);
+        console.log(`Send to client from YF package: ${priceType} ${priceText}`);
+        console.log(`Send to client from YF package: ${marketChangeType} ${marketChange}`);
+
+        console.log(
+            `Send to client from YF package: ${priceType} ${priceText}`
+        );
+    } catch (error) {
+        console.error(
+            `Failed to fetch quote data for ticker: ${ticker}`,
+            error
+        );
+    }
 }
 
 export async function connect(socket: Socket) {
@@ -236,6 +313,7 @@ export async function connect(socket: Socket) {
             console.log(`Decoded token id: ${decodedToken?.auth0Id}`);
         } */
         const ticker: string = msg;
+        sendDataFromYfPackage(socket, ticker);
         if (tickerPages.has(ticker)) {
             const entry = tickerPages.get(ticker);
             if (entry) {
@@ -243,7 +321,10 @@ export async function connect(socket: Socket) {
                 sendCurrentPrice(socket, ticker);
             }
         } else {
-            await createTickerPage(ticker, socket);
+            let page = await createTickerPage(ticker, socket);
+            while (page == null) {
+                page = await createTickerPage(ticker, socket);
+            }
             const entry = tickerPages.get(ticker);
             if (entry) {
                 const MINUTES = 60 * 1000;
