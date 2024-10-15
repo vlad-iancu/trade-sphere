@@ -8,9 +8,9 @@ import TickerAvatar from "@/app/components/TickerAvatar";
 
 export default async function Page({ params }: { params: { ticker: string } }) {
     await SignedIn();
-    let info: AssetInfo;
+    //let info: AssetInfo;
     try {
-        info = (await getAssetData(params.ticker)).info;
+        //info = (await getAssetData(params.ticker)).info;
     } catch (e) {
         console.error(e);
         notFound();

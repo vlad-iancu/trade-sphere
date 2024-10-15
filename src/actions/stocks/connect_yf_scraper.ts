@@ -55,11 +55,11 @@ async function skipTerms(page: puppeteer.Page): Promise<boolean> {
     const skipPromise = Promise.all([navigationPromise, selectorPromise]);
 
     try {
-        const failureChance = Math.random();
+        //const failureChance = Math.random();
         await skipPromise;
-        if (failureChance > 0.7) {
+        /* if (failureChance > 0.7) {
             throw new Error("Failed to skip consent");
-        }
+        } */
     } catch (e) {
         console.log("Error in skipping consent");
         return false;
@@ -269,6 +269,10 @@ async function sendDataFromYfPackage(socket: Socket, ticker: string) {
             } else if (quote.preMarketChange) {
             }
         }
+
+        priceText = parseFloat(priceText).toFixed(2).toString();
+        marketChange = parseFloat(marketChange).toFixed(2).toString();
+        marketChangePercent = "%" + parseFloat(marketChangePercent.replace(/[^0-9.+-]/g, "")).toFixed(2).toString();
 
         socket.emit("message", `${marketChangeType} ${marketChange}`);
         socket.emit(

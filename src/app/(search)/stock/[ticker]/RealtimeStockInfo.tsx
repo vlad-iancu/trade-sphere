@@ -3,7 +3,7 @@
 import { AssetInfo } from "@/data/Asset";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "@/styles/Stock.module.scss";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 export default function RealtimeStockInfo({
     params,
@@ -12,7 +12,10 @@ export default function RealtimeStockInfo({
     timeout?: number;
 }) {
     const [isLoaded, setIsLoaded] = useState(false);
-    const [assetData, setAssetData] = useState<AssetInfo>({last: {price: 0, priceChange: 0, priceChangePercent: 0}});
+    const [assetData, setAssetData] = useState<AssetInfo>({
+        last: { price: 0, priceChange: 0, priceChangePercent: 0 },
+    });
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [priceClasses, setPriceClasses] = useState({
         price: "",
         priceChange: "",
@@ -31,7 +34,7 @@ export default function RealtimeStockInfo({
     const priceChangeRegex = /^(.*)MarketChange$/;
     const priceChangePercentRegex = /^(.*)MarketChangePercent$/;
 
-    useEffect(() => {
+    const makeSocket = useCallback(() => {
         const socket = io({
             reconnection: true,
             reconnectionDelay: 1000,
@@ -39,6 +42,18 @@ export default function RealtimeStockInfo({
             reconnectionAttempts: 3,
             timeout: 20000,
         });
+        setSocket(socket);
+        socket.on("connect", () => {
+            socket.emit("message", params.ticker);
+        });
+        socket.on("disconnect", () => {
+            setSocket(null);
+        });
+        socket.on("connect_error", () => {
+            console.log("Connection error");
+            setSocket(null);
+        });
+        
         socket.on("message", (msg: string) => {
             setIsLoaded(true);
             const comps = msg.split(" ");
@@ -103,10 +118,10 @@ export default function RealtimeStockInfo({
                 });
             }
         });
-        socket.on("connect", () => {
-            socket.emit("message", params.ticker);
-        });
-
+        return socket;
+    }, []);
+    useEffect(() => {
+        const socket = makeSocket();
         return () => {
             socket.disconnect();
         };
@@ -133,12 +148,17 @@ export default function RealtimeStockInfo({
     const formatDifference = useCallback((nr: number) => {
         return nr >= 0 ? `+${nr}` : nr;
     }, []);
-    if(!isLoaded) {
+    if (!isLoaded) {
         return <div className={styles.loading}>Loading...</div>;
     }
     return (
-        <>
-            <div>
+        <div>
+            <div
+                style={{
+                    opacity: socket == null ? 0.5 : 1.0,
+                    display: "inline",
+                }}
+            >
                 <span
                     ref={priceRef}
                     className={styles[priceClasses.price]}
@@ -168,6 +188,18 @@ export default function RealtimeStockInfo({
                     {"%"}
                 </span>
             </div>
-        </>
+            {socket == null && (
+                <button
+                    onClick={() => {
+                        const socket = makeSocket();
+                        /* socket.on("disconnect", () => {
+                            setSocket(null);
+                        }); */
+                    }}
+                >
+                    Retry connection
+                </button>
+            )}
+        </div>
     );
 }
