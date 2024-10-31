@@ -18,6 +18,22 @@ export default function Search() {
                 if (!e.currentTarget.contains(e.relatedTarget as Node))
                     setHasFocus(false);
             }}
+            onKeyDown={(e) => {
+                if (e.key === "ArrowDown" || e.key === "ArrowUp") {
+                    e.preventDefault();
+                    const currentIndex = searchResults.findIndex(
+                        (result) => document.activeElement?.getAttribute("href") === `/stock/${result.ticker}`
+                    );
+                    let nextIndex = currentIndex;
+                    if (e.key === "ArrowDown") {
+                        nextIndex = (currentIndex + 1) % searchResults.length;
+                    } else if (e.key === "ArrowUp") {
+                        nextIndex = (currentIndex - 1 + searchResults.length) % searchResults.length;
+                    }
+                    const nextElement = document.querySelectorAll(`.${styles["search-result-item"]}`)[nextIndex] as HTMLElement;
+                    nextElement?.focus();
+                }
+            }}
         >
             <input
                 type="text"
@@ -69,6 +85,9 @@ export default function Search() {
                                 searchString.length > 0
                                     ? `1px solid ${colors.gray}`
                                     : "none",
+                        }}
+                        onMouseMove={(e) => {
+                            (e.currentTarget as HTMLElement).focus();
                         }}
                     >
                         {result.ticker}
