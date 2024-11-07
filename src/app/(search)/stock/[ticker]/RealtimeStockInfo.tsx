@@ -53,7 +53,7 @@ export default function RealtimeStockInfo({
             console.log("Connection error");
             setSocket(null);
         });
-        
+
         socket.on("message", (msg: string) => {
             setIsLoaded(true);
             const comps = msg.split(" ");
@@ -191,7 +191,7 @@ export default function RealtimeStockInfo({
             {socket == null && (
                 <button
                     onClick={() => {
-                        const socket = makeSocket();
+                        makeSocket();
                         /* socket.on("disconnect", () => {
                             setSocket(null);
                         }); */
