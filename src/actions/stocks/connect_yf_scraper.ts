@@ -264,15 +264,19 @@ async function sendDataFromYfPackage(socket: Socket, ticker: string) {
                 quote.preMarketChangePercent?.toString() || "N/A";
         }
 
-        if (!quote.regularMarketChange) {
+        /* if (!quote.regularMarketChange) {
             if (quote.postMarketChange) {
             } else if (quote.preMarketChange) {
             }
-        }
+        } */
 
         priceText = parseFloat(priceText).toFixed(2).toString();
         marketChange = parseFloat(marketChange).toFixed(2).toString();
-        marketChangePercent = "%" + parseFloat(marketChangePercent.replace(/[^0-9.+-]/g, "")).toFixed(2).toString();
+        marketChangePercent =
+            "%" +
+            parseFloat(marketChangePercent.replace(/[^0-9.+-]/g, ""))
+                .toFixed(2)
+                .toString();
 
         socket.emit("message", `${marketChangeType} ${marketChange}`);
         socket.emit(
@@ -280,8 +284,12 @@ async function sendDataFromYfPackage(socket: Socket, ticker: string) {
             `${marketChangePercentType} ${marketChangePercent}`
         );
         socket.emit("message", `${priceType} ${priceText}`);
-        console.log(`Send to client from YF package: ${priceType} ${priceText}`);
-        console.log(`Send to client from YF package: ${marketChangeType} ${marketChange}`);
+        console.log(
+            `Send to client from YF package: ${priceType} ${priceText}`
+        );
+        console.log(
+            `Send to client from YF package: ${marketChangeType} ${marketChange}`
+        );
 
         console.log(
             `Send to client from YF package: ${priceType} ${priceText}`
