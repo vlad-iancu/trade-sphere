@@ -3,17 +3,19 @@
 import { AssetInfo } from "@/data/Asset";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "@/styles/Stock.module.scss";
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 export default function RealtimeStockInfo({
     params,
-    initialData,
 }: {
     params: { ticker: string };
     timeout?: number;
-    initialData: AssetInfo;
 }) {
-    const [assetData, setAssetData] = useState<AssetInfo>(initialData);
+    const [isLoaded, setIsLoaded] = useState(false);
+    const [assetData, setAssetData] = useState<AssetInfo>({
+        last: { price: 0, priceChange: 0, priceChangePercent: 0 },
+    });
+    const [socket, setSocket] = useState<Socket | null>(null);
     const [priceClasses, setPriceClasses] = useState({
         price: "",
         priceChange: "",
@@ -32,17 +34,35 @@ export default function RealtimeStockInfo({
     const priceChangeRegex = /^(.*)MarketChange$/;
     const priceChangePercentRegex = /^(.*)MarketChangePercent$/;
 
-    useEffect(() => {
-        const socket = io();
+    const makeSocket = useCallback(() => {
+        const socket = io({
+            reconnection: true,
+            reconnectionDelay: 1000,
+            reconnectionDelayMax: 5000,
+            reconnectionAttempts: 3,
+            timeout: 20000,
+        });
+        setSocket(socket);
         socket.on("connect", () => {
             socket.emit("message", params.ticker);
         });
+        socket.on("disconnect", () => {
+            setSocket(null);
+        });
+        socket.on("connect_error", () => {
+            console.log("Connection error");
+            setSocket(null);
+        });
+        
         socket.on("message", (msg: string) => {
+            setIsLoaded(true);
             const comps = msg.split(" ");
-
+            console.log(msg);
             if (comps[0].match(priceRegex)) {
                 const price = parseFloat(comps[1]);
+                console.log(`Price: ${price}`);
                 setAssetData((prev) => {
+                    if (prev.last.price === price) return prev;
                     priceRef.current?.classList.add(
                         styles[
                             `${getPriceClass(price - prev.last.price)}-animation`
@@ -61,6 +81,7 @@ export default function RealtimeStockInfo({
             if (comps[0].match(priceChangeRegex)) {
                 const priceChange = parseFloat(comps[1]);
                 setAssetData((prev) => {
+                    if (prev.last.priceChange === priceChange) return prev;
                     priceChangeRef.current?.classList.add(
                         styles[
                             `${getPriceClass(priceChange - prev.last.priceChange)}-animation`
@@ -80,6 +101,8 @@ export default function RealtimeStockInfo({
                     comps[1].replace(/[^0-9.+-]/g, "")
                 );
                 setAssetData((prev) => {
+                    if (prev.last.priceChangePercent === priceChangePercent)
+                        return prev;
                     priceChangePercentRef.current?.classList.add(
                         styles[
                             `${getPriceClass(priceChangePercent - prev.last.priceChangePercent)}-animation`
@@ -95,7 +118,10 @@ export default function RealtimeStockInfo({
                 });
             }
         });
-
+        return socket;
+    }, []);
+    useEffect(() => {
+        const socket = makeSocket();
         return () => {
             socket.disconnect();
         };
@@ -119,9 +145,20 @@ export default function RealtimeStockInfo({
         []
     );
 
+    const formatDifference = useCallback((nr: number) => {
+        return nr >= 0 ? `+${nr}` : nr;
+    }, []);
+    if (!isLoaded) {
+        return <div className={styles.loading}>Loading...</div>;
+    }
     return (
-        <>
-            <div>
+        <div>
+            <div
+                style={{
+                    opacity: socket == null ? 0.5 : 1.0,
+                    display: "inline",
+                }}
+            >
                 <span
                     ref={priceRef}
                     className={styles[priceClasses.price]}
@@ -138,7 +175,7 @@ export default function RealtimeStockInfo({
                         removeAnimation(priceChangeRef);
                     }}
                 >
-                    {assetData.last.priceChange}
+                    {formatDifference(assetData.last.priceChange)}
                 </span>
                 <span
                     className={styles[priceClasses.priceChangePercent]}
@@ -147,10 +184,22 @@ export default function RealtimeStockInfo({
                         removeAnimation(priceChangePercentRef);
                     }}
                 >
-                    {assetData.last.priceChangePercent}
+                    {formatDifference(assetData.last.priceChangePercent)}
                     {"%"}
                 </span>
             </div>
-        </>
+            {socket == null && (
+                <button
+                    onClick={() => {
+                        const socket = makeSocket();
+                        /* socket.on("disconnect", () => {
+                            setSocket(null);
+                        }); */
+                    }}
+                >
+                    Retry connection
+                </button>
+            )}
+        </div>
     );
 }

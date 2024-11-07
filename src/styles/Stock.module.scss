@@ -11,31 +11,42 @@
     @keyframes #{$className}-animation {
         $peakOpacity: 0.16;
         0% {
-            background-color: rgba($color: $priceColor, $alpha: 0.0);
+            background-color: rgba($color: $priceColor, $alpha: 0);
         }
         25% {
-            background-color: rgba($color: $priceColor, $alpha: $peakOpacity / 2);
+            background-color: rgba(
+                $color: $priceColor,
+                $alpha: $peakOpacity / 2
+            );
         }
         50% {
             background-color: rgba($color: $priceColor, $alpha: $peakOpacity);
         }
         75% {
-            background-color: rgba($color: $priceColor, $alpha: $peakOpacity / 2);
+            background-color: rgba(
+                $color: $priceColor,
+                $alpha: $peakOpacity / 2
+            );
         }
         100% {
-            background-color: rgba($color: $priceColor, $alpha: 0.0);
+            background-color: rgba($color: $priceColor, $alpha: 0);
         }
     }
     .#{$className}-animation {
         //@extend .#{$className};
         //color: $priceColor;
-        animation: #{$className}-animation .3s forwards;
+        animation: #{$className}-animation 0.3s forwards;
     }
-
 }
 
+.loading {
+    color: colors.$darkGray;
+    // margin-right: 16px;
+    // margin-top: 16px;
+    font-family: "NotoSans";
+    //padding: 2px;
+}
 
 @include price-class(colors.$profitGreen, gain);
 @include price-class(colors.$lossRed, loss);
 @include price-class(colors.$black, price);
-
